@@ -1,18 +1,32 @@
-import books from "@/mock/books.json";
-import BookItem from "@/components/book-item";
+import BookItem from '@/components/book-item'
+import { BookData } from '@/types'
+import { delay } from '@/util/delay'
 
-export default function Page({
+export default async function Page({
   searchParams,
 }: {
   searchParams: Promise<{
-    q?: string;
-  }>;
+    q?: string
+  }>
 }) {
+  const resolvedSearchParams = await searchParams
+  await delay(1500) // to test loading UI
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_SERVER_URL}/book/search?q=${resolvedSearchParams.q}`,
+    {
+      cache: 'force-cache',
+    },
+  )
+  if (!response.ok) {
+    return <div>An error has occurred‼️</div>
+  }
+
+  const books: BookData[] = await response.json()
   return (
     <div>
-      {books.map((book) => (
+      {books.map(book => (
         <BookItem key={book.id} {...book} />
       ))}
     </div>
-  );
+  )
 }
